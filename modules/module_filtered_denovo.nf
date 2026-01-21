@@ -15,11 +15,11 @@ workflow module_filtered_denovo {
             refs:  it[1][1..3] // riscd, code, path
         }.set { readsAndReferences }
 
-        filtered = step_1PP_filtering__bowtie(readsAndReferences.reads, readsAndReferences.refs)
+        filtered = step_1PP_filtering__bowtie(readsAndReferences.reads, readsAndReferences.refs)       
         assembled = step_2AS_denovo__spades(filtered)
     emit:
-        assembled
-        filtered
+        assembled = assembled
+        filtered = filtered
 }
 
 workflow {

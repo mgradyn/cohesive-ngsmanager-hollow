@@ -9,7 +9,7 @@ workflow module_wgs_bacteria {
     main:
         step_2AS_denovo__shovill(trimmedReads)
     emit:
-        step_2AS_denovo__shovill.out
+        shovill_out = step_2AS_denovo__shovill.out
 }
 
 workflow {

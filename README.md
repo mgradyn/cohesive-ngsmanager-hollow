@@ -1,1 +1,0 @@
-# COHESIVE - Nextflow scripts

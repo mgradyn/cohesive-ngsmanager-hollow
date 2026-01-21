@@ -17,9 +17,10 @@ workflow module_covid_emergency {
             trimmed: it
             reference: [ referenceRiscd, referenceCode, file(referencePath) ]
         }.set { trAndRef }
-        consensus = step_2AS_mapping__ivar(trAndRef.trimmed, trAndRef.reference).consensus
-        step_4TY_lineage__pangolin(consensus)
-    }
+        
+        ivar_out = step_2AS_mapping__ivar(trAndRef.trimmed, trAndRef.reference)
+        step_4TY_lineage__pangolin(ivar_out.consensus)
+}
 
 workflow {
     module_covid_emergency(getSingleInput())

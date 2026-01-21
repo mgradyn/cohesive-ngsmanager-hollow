@@ -9,17 +9,32 @@ workflow module_segmented {
         reads
         reference 
     main:
-        step_2AS_mapping__ivar(reads, reference)
+        ivar_results = step_2AS_mapping__ivar(reads, reference)
     emit:
-        step_2AS_mapping__ivar.out.consensus
+        consensus = ivar_results.consensus
+}
+
+workflow prepare_inputs {
+    take:
+        raw_reads
+        raw_refs
+    main:
+        raw_reads.cross(raw_refs) { extractKey(it) }
+            .multiMap { 
+                reads: it[0] 
+                refs:  it[1][1..3] 
+            }
+            .set { ch_prepared }
+    emit:
+        reads = ch_prepared.reads
+        refs = ch_prepared.refs
 }
 
 workflow {
-    getSingleInput().cross(getReferences('any')) { extractKey(it) }
-      .multiMap { 
-          reads: it[0] // riscd, R[]
-          refs:  it[1][1..3] // riscd, code, path
-      }.set { input }
-
-    module_segmented(input.reads, input.refs)
+    ch_in = getSingleInput()
+    ch_ref = getReferences('any')
+    
+    ch_ready = prepare_inputs(ch_in, ch_ref)
+    
+    module_segmented(ch_ready.reads, ch_ready.refs)
 }

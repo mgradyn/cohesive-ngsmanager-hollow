@@ -20,14 +20,15 @@ workflow module_denovo {
 
         depleted = step_1PP_hostdepl__bowtie(branchedTrimmed.with_host)
 
-        branchedTrimmed.without_host
+        ch_denovo_input = branchedTrimmed.without_host
             .mix(depleted)
-            .map { it[0,1] }
-            .set{ denovoInput }
-        assembled = step_2AS_denovo__spades(denovoInput)
+            .map { it[0,1] } // Keep [riscd, reads]
+            
+        assembled = step_2AS_denovo__spades(ch_denovo_input)
+
     emit:
-        assembled
-        depleted
+        assembled = assembled
+        depleted = depleted
 }
 
 workflow {

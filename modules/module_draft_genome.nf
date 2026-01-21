@@ -30,7 +30,7 @@ workflow module_draft_genome {
         }.set { consensusKingdomReference }
 
         step_4AN_genes__prokka(consensusKingdomReference)
-    }
+}
 
 workflow  {
     module_draft_genome(getSingleInput(), getReference('fa'), getReferenceOptional('gb'))

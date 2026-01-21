@@ -14,18 +14,21 @@ workflow module_vdraft {
         referenceGB
         abricateDatabase
     main:
-        denovoOut = module_denovo(reads, host);
+        denovo_out = module_denovo(reads, host)
 
-        denovoOut.assembled
+        denovo_out.assembled
             .cross(reference) { extractKey(it) }
-            .cross(abricateDatabase) { extractKey(it) }.multiMap { 
+            .cross(abricateDatabase) { extractKey(it) }
+            .multiMap { 
                 assembly: it[0][0][0..1]
                 reference: it[0][1]
                 abricateDatabase: it[1]
-            }.set { cARA }
-        module_scaffolds_filtering(cARA.assembly, cARA.reference, cARA.abricateDatabase)
+            }
+            .set { ch_scaff_filt }
+            
+        module_scaffolds_filtering(ch_scaff_filt.assembly, ch_scaff_filt.reference, ch_scaff_filt.abricateDatabase)
         
-        denovoOut.depleted
+        denovo_out.depleted
             .cross(reference) { extractKey(it) }
             .cross(referenceGB) { extractKey(it) }
             .multiMap {
@@ -33,10 +36,17 @@ workflow module_vdraft {
                 reference: it[0][1]
                 referenceGB: it[1]
             }
-            .set { cDR }
-        module_draft_genome(cDR.depleted, cDR.reference, cDR.referenceGB)
-    }
+            .set { ch_draft }
+            
+        module_draft_genome(ch_draft.depleted, ch_draft.reference, ch_draft.referenceGB)
+}
 
 workflow {
-    module_vdraft(getSingleInput(), getHost(), getReference('fa'), getReferenceOptional('gb'), Channel.of([ getDS(), 'viruses_TREF' ]))
+    ch_in = getSingleInput()
+    ch_host = getHost()
+    ch_ref_fa = getReference('fa')
+    ch_ref_gb = getReferenceOptional('gb')
+    ch_db = Channel.of([ getDS(), 'viruses_TREF' ])
+    
+    module_vdraft(ch_in, ch_host, ch_ref_fa, ch_ref_gb, ch_db)
 }

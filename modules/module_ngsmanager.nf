@@ -1,1 +1,0 @@
-../pipelines/pipeline_ngsmanager.nf

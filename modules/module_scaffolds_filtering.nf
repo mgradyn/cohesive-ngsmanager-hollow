@@ -13,20 +13,27 @@ workflow module_scaffolds_filtering {
     main:
         assembled.cross(abricatedatabase) { extractKey(it) }
             .map { 
-                [ it[0][0], it[0][1], it[1][1] ] //scaffolds, db
-            }.set { scaffoldsAndDatabase }
-        calls = step_3TX_species__vdabricate(scaffoldsAndDatabase)
-        calls
-            .cross(assembled) { extractKey(it) } // [ [riscd, calls], [riscd, assembly] ]
-            .cross(reference) { extractKey(it) } // [ [ [riscd, calls], [riscd, assembly] ], [ key, riscd, refid refpath ] ]
+                [ it[0][0], it[0][1], it[1][1] ] 
+            }
+            .set { ch_scaffolds_db }
+
+        ch_calls = step_3TX_species__vdabricate(ch_scaffolds_db)
+
+        ch_calls.cross(assembled) { extractKey(it) }
+            .cross(reference) { extractKey(it) }
             .multiMap { 
                 calls: it[0][0]
                 assembly: it[0][1]
                 reference: it[1][1..3]
-            }.set { filt }
-        step_2AS_filtering__seqio(filt.calls, filt.assembly, filt.reference)
+            }
+            .set { ch_filt }
+
+        step_2AS_filtering__seqio(ch_filt.calls, ch_filt.assembly, ch_filt.reference)
 }
 
 workflow {
-    module_scaffolds_filtering(getInput(), getReference('fa'), Channel.of([ getDS(), 'viruses_TREF' ]))
+    ch_input = getInput()
+    ch_ref = getReference('fa')
+    ch_db = Channel.of([ getDS(), 'viruses_TREF' ])
+    module_scaffolds_filtering(ch_input, ch_ref, ch_db)
 }
